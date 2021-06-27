@@ -92,6 +92,7 @@ export default function Bean(props){
                         numberOFLines={5}
                         onBlur={HandleCloseDescription} 
                         onChangeText={(text)=>{HandleDescriptionInput(text)}}
+                        multiline = {true}
                         value = {description}
                         />
                         :<Text style={style.description} onPress={HandleCloseDescription} numberOFLines={10}>{description} </Text>}
@@ -128,7 +129,8 @@ const style = StyleSheet.create({
         padding: 20,
         borderRadius:22,
         marginTop: 20,
-        maxHeight: 400
+        maxHeight: 400,
+        maxWidth: 400
     },
     beanHead:{
         justifyContent: "space-between",

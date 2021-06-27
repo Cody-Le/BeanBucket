@@ -11,13 +11,13 @@ export default function App() {
     Roboto_400Regular
   })
 
-
+  //Initiallized object
   var bin = []
 
-
+  //State
   let [bins, editBin] = useState(bin)
   let [needRefresh, setRefreshNeed] = useState(false)
-
+  let [isBurgered, setBurger] = useState(false)
   
 
   const addBean = () => {
@@ -30,10 +30,10 @@ export default function App() {
   
   }
 
-
+  //Pass on Functions
   const DeleteBean = (key) =>{
     let index = bins.findIndex((item) => {return item.key == key})
-    bin2 = bins
+    let bin2 = bins
     bin2.splice(index, 1)
     editBin(bin2)
     setRefreshNeed(!needRefresh)
@@ -49,15 +49,29 @@ export default function App() {
     setRefreshNeed(!needRefresh)
   }
 
+  //Event handler
+
+  const HandleBurgerPressed = () =>{
+    setBurger(!isBurgered)
+  }
+
   if (!isFontLoaded){
     return <AppLoading/>
   }else{
     
     return (
       <View style={styles.container}>  
-        <View style={styles.head}>
-          <TouchableOpacity onPress={addBean}><View style={styles.circle}></View></TouchableOpacity>
-          <Text style={styles.headText}>Add a bean</Text>
+       {isBurgered?<View style={styles.menu}>
+        <View style={styles.profileCircle}/>
+        <Text style={styles.profileName}>User: Guest</Text>
+        <Text style={styles.menuText}>Login</Text>
+        </View>:
+        <View></View>}
+        <View style={{flexDirection: "row",justifyContent:"space-between"}}>
+          <View style={styles.head}><TouchableOpacity onPress={addBean}><View style={styles.circle}></View></TouchableOpacity>
+            <Text style={styles.headText}>Add a bean</Text>
+          </View>
+          <TouchableOpacity onPress={HandleBurgerPressed}style={styles.burger}><View></View></TouchableOpacity> 
         </View>
         <FlatList contentContainerStyle={styles.beansContainer}
         data = {bins}
@@ -84,6 +98,18 @@ const styles = StyleSheet.create({
       paddingTop: 42
     },
 
+    burger:{
+      backgroundColor: "#FFD3B4",
+      width: 20,
+      height: 20,
+      position: "absolute",
+      top: 47,
+      right: 30,
+      borderRadius: 30,
+      zIndex: 5
+    },
+
+
     circle:{
       width: 35,
       height: 35,
@@ -103,5 +129,41 @@ const styles = StyleSheet.create({
       width: "100%",
       paddingBottom: 400
     },
+
+    menu:{
+      backgroundColor:"#fff",
+      position: "absolute",
+      height: "25%",
+      width: "100%",
+      padding: 20,
+      
+      bottom: 0,
+      alignItems: "center",
+      justifyContent: "flex-start",
+      zIndex:2,
+      shadowColor: "#000",
+      shadowOffset: {width: 0, height: 100},
+      shadowRadius: 100,
+      shadowOpacity: 10,
+      elevation: 10
+    },
+
+    menuText:{
+      fontWeight: "100",
+      fontSize: 12,
+    },
+
+    profileName:{
+      fontWeight: "bold",
+
+    },
+
+    profileCircle:{
+      width: 50,
+      height: 50,
+      backgroundColor: "#e4e4e4",
+      borderRadius: 30,
+      margin: 20
+    }
 
 });
