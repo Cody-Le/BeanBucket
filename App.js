@@ -4,12 +4,34 @@ import { StyleSheet, Text, View, Button, TextInput, FlatList, TouchableOpacity} 
 import { useFonts, Roboto_400Regular } from '@expo-google-fonts/roboto';
 import AppLoading from "expo-app-loading";
 import Bean from "./components/Beans.js"
-
+import firebase from "firebase/app"
+import AuthPage from './components/AuthPage.js'
 
 export default function App() {
   let[isFontLoaded] = useFonts({
     Roboto_400Regular
   })
+
+
+  let config = {
+    apiKey: "AIzaSyDwkpXpQgNmuV15udAS1jvfbZvNDLsRv7g",
+    authDomain: "beanbucket-d31ca.firebaseapp.com",
+    projectId: "beanbucket-d31ca",
+    storageBucket: "beanbucket-d31ca.appspot.com",
+    messagingSenderId: "47776766169",
+    appId: "1:47776766169:web:7901cb7df53efc953206c8",
+    measurementId: "G-3F5B5BS2HR"
+  };
+
+
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp({});
+ }else {
+    firebase.app(); // if already initialized, use that one
+ }
+
+
 
   //Initiallized object
   var bin = []
@@ -18,8 +40,8 @@ export default function App() {
   let [bins, editBin] = useState(bin)
   let [needRefresh, setRefreshNeed] = useState(false)
   let [isBurgered, setBurger] = useState(false)
-  
-
+  let [isAuthUi, setAuthUi] = useState(false)
+  let [currentUser, setCurrentUser] = useState(null)
   const addBean = () => {
     console.log( Math.random() * 1000)
     let bin2 = bins
@@ -55,32 +77,67 @@ export default function App() {
     setBurger(!isBurgered)
   }
 
+  const HandleLAuthUI = () =>{
+    setAuthUi(!isAuthUi)
+  }
+
+  //Action eg. Data fetching, authentication functions
+
+
+  const signIn = (email, password)=>{
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+    firebase.auth().onAuthStateChanged((user)=>{
+      if(user){
+        setCurrentUser(user)
+      }
+    })
+  }
+
+  const signUp = (email, password) => {
+    firebase.auth().signInWithEmailAndPassword(email, password)
+    firebase.auth().onAuthStateChanged((user)=>{
+      if(user){
+        setCurrentUser(user)
+      }
+    })
+  }
+
+
+
   if (!isFontLoaded){
     return <AppLoading/>
   }else{
-    
-    return (
-      <View style={styles.container}>  
-       {isBurgered?<View style={styles.menu}>
-        <View style={styles.profileCircle}/>
-        <Text style={styles.profileName}>User: Guest</Text>
-        <Text style={styles.menuText}>Login</Text>
-        </View>:
-        <View></View>}
-        <View style={{flexDirection: "row",justifyContent:"space-between"}}>
-          <View style={styles.head}><TouchableOpacity onPress={addBean}><View style={styles.circle}></View></TouchableOpacity>
-            <Text style={styles.headText}>Add a bean</Text>
+
+    //Main UI
+    if (!isAuthUi){
+      return (
+        <View style={styles.container}>  
+         {isBurgered?<View style={styles.menu}>
+          <View style={styles.profileCircle}/>
+          <Text style={styles.profileName}>User: Guest</Text>
+          <Text style={styles.menuText} onPress={HandleLAuthUI}>Login</Text>
+          </View>:
+          <View></View>}
+          <View style={{flexDirection: "row",justifyContent:"space-between"}}>
+            <View style={styles.head}><TouchableOpacity onPress={addBean}><View style={styles.circle}></View></TouchableOpacity>
+              <Text style={styles.headText}>Add a bean</Text>
+            </View>
+            <TouchableOpacity onPress={HandleBurgerPressed}style={styles.burger}><View></View></TouchableOpacity> 
           </View>
-          <TouchableOpacity onPress={HandleBurgerPressed}style={styles.burger}><View></View></TouchableOpacity> 
+          <FlatList contentContainerStyle={styles.beansContainer}
+          data = {bins}
+          renderItem = {({item})=><Bean title = {item.title} id = {item.key} description = {item.description} updateHandler={UpdateBean} deleteHandler = {DeleteBean} key = {item.key}/>}
+          extraData = {needRefresh}
+          
+          />
         </View>
-        <FlatList contentContainerStyle={styles.beansContainer}
-        data = {bins}
-        renderItem = {({item})=><Bean title = {item.title} id = {item.key} description = {item.description} updateHandler={UpdateBean} deleteHandler = {DeleteBean} key = {item.key}/>}
-        extraData = {needRefresh}
-        
-        />
-      </View>
-    );
+      );
+    }else{
+      //Login UI
+        return <AuthPage signInHandler={signIn} signUpHandler={signUp}/>
+      
+    }
+    
   }
   
 }
@@ -159,11 +216,34 @@ const styles = StyleSheet.create({
     },
 
     profileCircle:{
-      width: 50,
+      width: 70,
       height: 50,
-      backgroundColor: "#e4e4e4",
+      backgroundColor: "#F2F4F6",
       borderRadius: 30,
       margin: 20
+    },
+
+    input:{
+      backgroundColor: "#FFF",
+      width: "80%",
+      height: 50,
+      padding: 10,
+      borderRadius: 10,
+      marginTop: 15
+      
+    },
+    submitButton:{
+        backgroundColor: "#D5ECC2",
+        padding: 10,
+        marginTop: 15,
+        borderRadius:5,
+      
+    },
+
+    signUpText:{
+      marginTop: 22,
+      marginLeft: 5
+
     }
 
 });
