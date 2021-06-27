@@ -1,4 +1,4 @@
-import React, {useState}from 'react';
+import React, {useState, Component}from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
 import { Roboto_400Regular, useFonts } from '@expo-google-fonts/roboto';
 import AppLoading from "expo-app-loading";
@@ -18,12 +18,20 @@ export default function Bean(props){
 
     const HandleCloseInput = () =>{
         console.log(isEditTitle)
+        if (isEditTitle){
+            props.updateHandler(props.key,title,description)
+        }
         setTitleState(!isEditTitle)
+    
     }
 
 
     const HandleCloseDescription = () =>{
         setEditDescription(!isEditDescription)
+        if (isEditDescription){
+            props.updateHandler(props.key,title,description)
+        }
+        props.updateHandler(props.key,title,description)
     }
 
     const HandleTitleInput = (text) =>{
@@ -127,6 +135,7 @@ const style = StyleSheet.create({
         padding: 20,
     },
     description:{
+        width: "80%",
         color: "#747474"
     }
 

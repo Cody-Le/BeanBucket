@@ -12,33 +12,37 @@ export default function App() {
   })
 
 
-  var bin = [{key: "0001", title: "banana", description: "Chicken, Bananana, WAWAWA, UWUW"},
-  {key: "0002", title: "banana", description: "Chicken, Bananana, WAWAWA, UWUW"},
-  {key: "0003",title: "banana", description: "Chicken, Bananana, WAWAWA, UWUW"},
-  {key: "0004",title: "banana", description: "Chicken, Bananana, WAWAWA, UWUW"},
-  {key: "0005", title: "banana", description: "Chicken, Bananana, WAWAWA, UWUW"},
-  {key: "0006",title: "banana", description: "Chicken, Bananana, WAWAWA, UWUW"},
-  {key: "0007",title: "banana", description: "Chicken, Bananana, WAWAWA, UWUW"},
-  ]
+  var bin = []
 
 
   let [bins, editBin] = useState(bin)
+  let [needRefresh, setRefreshNeed] = useState(false)
+
+  
 
   const addBean = () => {
     console.log( Math.random() * 1000)
-    bin.push({key: Math.floor(Math.random() * 1000).toString(), title: "bean", description: "Add a description"})
-    editBin(bin)
+    let bin2 = bins
+    
+    bin2.push({key: Math.floor(Math.random() * 1000).toString(), title: "bean", description: "Add a description"})
+    editBin(bin2)
+    bin = bins
+    setRefreshNeed(!needRefresh)
+  
   }
 
   const UpdateBean = (key, title, description) =>{
-    let index = findIndex((item)=>{return item.key == key;})
+    let index = bins.findIndex((item)=>{return item.key == key;})
     bin[index] = {key:key, title: title, description: description}
+    console.log(bin[index])
     editBin(bin)
+    setRefreshNeed(!needRefresh)
   }
 
   if (!isFontLoaded){
     return <AppLoading/>
   }else{
+    
     return (
       <View style={styles.container}>  
         <View style={styles.head}>
@@ -47,7 +51,10 @@ export default function App() {
         </View>
         <FlatList contentContainerStyle={styles.beansContainer}
         data = {bins}
-        renderItem = {({item})=><Bean title = {item.title} key = {item.key} description = {item.description} updateHandler={UpdateBean}/>}/>
+        renderItem = {({item})=><Bean title = {item.title} key = {item.key} description = {item.description} updateHandler={UpdateBean} key = {item.key}/>}
+        extraData = {needRefresh}
+        
+        />
       </View>
     );
   }
@@ -83,7 +90,8 @@ const styles = StyleSheet.create({
     },
     beansContainer:{
       alignItems: "center",
-      width: "100%"
+      width: "100%",
+      paddingBottom: 400
     },
 
 });
