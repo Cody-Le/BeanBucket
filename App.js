@@ -26,16 +26,26 @@ export default function App() {
     
     bin2.push({key: Math.floor(Math.random() * 1000).toString(), title: "bean", description: "Add a description"})
     editBin(bin2)
-    bin = bins
     setRefreshNeed(!needRefresh)
   
   }
 
+
+  const DeleteBean = (key) =>{
+    let index = bins.findIndex((item) => {return item.key == key})
+    bin2 = bins
+    bin2.splice(index, 1)
+    editBin(bin2)
+    setRefreshNeed(!needRefresh)
+  }
+
   const UpdateBean = (key, title, description) =>{
     let index = bins.findIndex((item)=>{return item.key == key;})
-    bin[index] = {key:key, title: title, description: description}
-    console.log(bin[index])
-    editBin(bin)
+    let bin2 = bins
+    bin2[index] = {key:key, title: title, description: description}
+    console.log(index,key, title, description)
+    editBin(bin2)
+    console.log(bins)
     setRefreshNeed(!needRefresh)
   }
 
@@ -51,7 +61,7 @@ export default function App() {
         </View>
         <FlatList contentContainerStyle={styles.beansContainer}
         data = {bins}
-        renderItem = {({item})=><Bean title = {item.title} key = {item.key} description = {item.description} updateHandler={UpdateBean} key = {item.key}/>}
+        renderItem = {({item})=><Bean title = {item.title} id = {item.key} description = {item.description} updateHandler={UpdateBean} deleteHandler = {DeleteBean} key = {item.key}/>}
         extraData = {needRefresh}
         
         />
