@@ -138,7 +138,7 @@ const style = StyleSheet.create({
     },
     title:{
         paddingLeft: 20,
-        fontSize: 20,
+        fontSize: 15,
         width: "80%",
         fontWeight: "bold"
         

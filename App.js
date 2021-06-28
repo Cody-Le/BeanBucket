@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { StyleSheet, Text, View, Button, TextInput, FlatList, TouchableOpacity} from 'react-native';
 import { useFonts, Roboto_400Regular } from '@expo-google-fonts/roboto';
 import AppLoading from "expo-app-loading";
@@ -7,6 +7,10 @@ import Bean from "./components/Beans.js"
 import firebase from "firebase/app"
 import AuthPage from './components/AuthPage.js'
 import 'firebase/auth'
+import "firebase/database"
+
+
+
 
 export default function App() {
   let[isFontLoaded] = useFonts({
@@ -25,16 +29,6 @@ export default function App() {
   };
 
 
-
-  if (!firebase.apps.length) {
-    firebase.initializeApp(config);
- }else {
-    firebase.app(); // if already initialized, use that one
- }
-
-
-
-  //Initiallized object
   var bin = []
 
   //State
@@ -43,11 +37,69 @@ export default function App() {
   let [isBurgered, setBurger] = useState(false)
   let [isAuthUi, setAuthUi] = useState(false)
   let [currentUser, setCurrentUser] = useState(null)
+
+
+
+
+  const getBeans = (uid) =>{
+
+    db.ref().child("users/bucket").child(uid).get().then((snap)=>{
+      if(snap.exists()){
+        var updateBin = []
+        for (var bean in snap.val()){
+          updateBin.push({key:bean, title: snap.val()[bean]['title'], description: snap.val()[bean]['description']})
+        }
+        editBin(updateBin)
+      }
+    })
+  }
+
+
+  useEffect(() =>{
+    if (!firebase.apps.length) {
+      firebase.initializeApp(config);
+    }else {
+      firebase.app(); // if already initialized, use that one
+    }
+  
+    db = firebase.database()
+
+    firebase.auth().onAuthStateChanged((user)=>{
+      setCurrentUser(user)
+      setAuthUi(false)
+      getBeans(user.uid)
+     
+    })
+
+  },[])
+
+
+
   const addBean = () => {
-    console.log( Math.random() * 1000)
+
+    //Communication with backend,
+    //Append a new key
+    let newKey = db.ref().child(currentUser.uid).push().key
+
+    //Add a new bean with the same template
+    const postData = {
+      title: "A new Bean",
+      description: "Add a new description"
+    }
+    var updates = {}
+    updates["users/bucket/" + currentUser.uid + "/" + newKey] = postData
+
+    db.ref().update(updates);
+
+
+
+
+
+    //Handle UI part
+  
     let bin2 = bins
     
-    bin2.push({key: Math.floor(Math.random() * 1000).toString(), title: "bean", description: "Add a description"})
+    bin2.push({key: newKey, title: "bean", description: "Add a description"})
     editBin(bin2)
     setRefreshNeed(!needRefresh)
   
@@ -61,6 +113,10 @@ export default function App() {
     editBin(bin2)
     setRefreshNeed(!needRefresh)
   }
+
+
+
+  
 
   const UpdateBean = (key, title, description) =>{
     let index = bins.findIndex((item)=>{return item.key == key;})
@@ -93,17 +149,17 @@ export default function App() {
       if(user){
         console.log(user.uid)
         setCurrentUser(user)
+        getBeans(user.uid)
       }
     })
   }
 
   const signUp = (userName, email, password) => {
-    console.log(email.length, email, password)
     firebase.auth().createUserWithEmailAndPassword(email, password)
     firebase.auth().onAuthStateChanged((user)=>{
       if(user){
         console.log(user.uiid)
-        
+        getBeans(user.uid)
         user.updateProfile({displayName: userName}).then(()=>{
           setCurrentUser(user)
         })
@@ -147,28 +203,7 @@ export default function App() {
           </View>
         );
       }else{
-        return (
-          <View style={styles.container}>  
-           {isBurgered?<View style={styles.menu}>
-            <View style={styles.profileCircle}/>
-            <Text style={styles.profileName}>User: Guest</Text>
-            <Text style={styles.menuText} onPress={HandleLAuthUI}>Login</Text>
-            </View>:
-            <View></View>}
-            <View style={{flexDirection: "row",justifyContent:"space-between"}}>
-              <View style={styles.head}><TouchableOpacity onPress={addBean}><View style={styles.circle}></View></TouchableOpacity>
-                <Text style={styles.headText}>Add a bean</Text>
-              </View>
-              <TouchableOpacity onPress={HandleBurgerPressed}style={styles.burger}><View></View></TouchableOpacity> 
-            </View>
-            <FlatList contentContainerStyle={styles.beansContainer}
-            data = {bins}
-            renderItem = {({item})=><Bean title = {item.title} id = {item.key} description = {item.description} updateHandler={UpdateBean} deleteHandler = {DeleteBean} key = {item.key}/>}
-            extraData = {needRefresh}
-            
-            />
-          </View>
-        );
+        HandleLAuthUI()
       }
     }else{
       //Login UI
@@ -254,7 +289,7 @@ const styles = StyleSheet.create({
     },
 
     profileCircle:{
-      width: 70,
+      width: 50,
       height: 50,
       backgroundColor: "#F2F4F6",
       borderRadius: 30,

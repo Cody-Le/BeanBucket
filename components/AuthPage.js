@@ -29,7 +29,7 @@ export default function AuthPage(props){
     const SignUp = () =>{
         if (validateEmail(email) && (password == reConfirmPassWord)){
             console.log()
-            props.signUpHandler(email.replace(" ",""), password)
+            props.signUpHandler(userName,email.replace(" ",""), password)
             props.escapeHandler()
         }else{
             setErrorAlert(true)
@@ -79,7 +79,7 @@ export default function AuthPage(props){
             <TextInput placeholder={"Confirm password"} style={styles.input} onChangeText={text=>setConfirmPassword(text)} value = {reConfirmPassWord } secureTextEntry={true}/>
             <View style={{flexDirection:"row", justifyContent:"space-between", width: "80%"}}>
               <Text style={styles.signUpText} onPress={HandleSignUp}>Login In</Text>
-              <TouchableOpacity style={[styles.submitButton]} onPress = {Sign}><View><Text>Sign Up</Text></View></TouchableOpacity> 
+              <TouchableOpacity style={[styles.submitButton]} onPress = {SignUp}><View><Text>Sign Up</Text></View></TouchableOpacity> 
                
             </View>
           </View>
