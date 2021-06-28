@@ -65,9 +65,11 @@ export default function App() {
     db = firebase.database()
 
     firebase.auth().onAuthStateChanged((user)=>{
-      setCurrentUser(user)
-      setAuthUi(false)
-      getBeans(user.uid)
+      if(user != null){
+        setCurrentUser(user)
+        setAuthUi(false)
+        getBeans(user.uid)
+      }
      
     })
 
@@ -107,6 +109,8 @@ export default function App() {
 
   //Pass on Functions
   const DeleteBean = (key) =>{
+    db.ref().child("users/bucket/").child(currentUser.uid).child(key).remove()
+
     let index = bins.findIndex((item) => {return item.key == key})
     let bin2 = bins
     bin2.splice(index, 1)
@@ -119,6 +123,17 @@ export default function App() {
   
 
   const UpdateBean = (key, title, description) =>{
+
+    const postData = {
+      title: "title",
+      description: "description"
+    }
+    var updates = {}
+    updates["users/bucket/" + currentUser.uid + "/" + key] = postData
+
+    db.ref().update(updates);
+
+
     let index = bins.findIndex((item)=>{return item.key == key;})
     let bin2 = bins
     bin2[index] = {key:key, title: title, description: description}
@@ -168,6 +183,7 @@ export default function App() {
   }
 
   const signOut = () => {
+    editBin([])
     firebase.auth().signOut()
     setCurrentUser(null)
   }
