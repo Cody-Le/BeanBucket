@@ -8,6 +8,23 @@ import firebase from "firebase/app"
 import AuthPage from './components/AuthPage.js'
 import 'firebase/auth'
 import "firebase/database"
+import Modal from "react-native-modal"
+
+
+
+function ErrorWindow(props){
+
+  return(
+    <Modal isVisible = {props.visible}>
+      <View style = {styles.AlertWrapper}>
+        <Text style = {styles.AlertText}>{props.error}</Text>
+        <TouchableOpacity onPress={props.HandleOK} style={styles.AlertOK}>
+          <View>OK</View>
+        </TouchableOpacity>
+        </View>
+    </Modal>
+  );
+}
 
 
 
@@ -16,6 +33,13 @@ export default function App() {
   let[isFontLoaded] = useFonts({
     Roboto_400Regular
   })
+
+
+
+  
+
+
+
 
 
   const config = {
@@ -37,12 +61,22 @@ export default function App() {
   let [isBurgered, setBurger] = useState(false)
   let [isAuthUi, setAuthUi] = useState(false)
   let [currentUser, setCurrentUser] = useState(null)
+  let [showAlert, setAlertState] = useState(false)
+  let [message, setAlertMessage] = useState("")
+
+
+  const HandleAlert = () =>{
+    setAlertState(!showAlert)
+  }
+
+
 
 
 
 
   const getBeans = (uid) =>{
 
+    let db = firebase.database()
     db.ref().child("users/bucket").child(uid).get().then((snap)=>{
       if(snap.exists()){
         var updateBin = []
@@ -51,6 +85,9 @@ export default function App() {
         }
         editBin(updateBin)
       }
+    }).catch((e)=>{
+      setAlertMessage(e.toString())
+      HandleAlert()
     })
   }
 
@@ -62,7 +99,7 @@ export default function App() {
       firebase.app(); // if already initialized, use that one
     }
   
-    db = firebase.database()
+    let db = firebase.database()
 
     firebase.auth().onAuthStateChanged((user)=>{
       if(user != null){
@@ -78,6 +115,7 @@ export default function App() {
 
 
   const addBean = () => {
+    let db = firebase.database()
 
     //Communication with backend,
     //Append a new key
@@ -91,7 +129,10 @@ export default function App() {
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + newKey] = postData
 
-    db.ref().update(updates);
+    db.ref().update(updates).catch((e)=>{
+      setAlertMessage(e.toString())
+      HandleAlert()
+    })
 
 
 
@@ -109,6 +150,7 @@ export default function App() {
 
   //Pass on Functions
   const DeleteBean = (key) =>{
+    let db = firebase.database()
     db.ref().child("users/bucket/").child(currentUser.uid).child(key).remove()
 
     let index = bins.findIndex((item) => {return item.key == key})
@@ -123,15 +165,18 @@ export default function App() {
   
 
   const UpdateBean = (key, title, description) =>{
-
+    let db = firebase.database()
     const postData = {
-      title: "title",
-      description: "description"
+      title: title,
+      description: description
     }
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + key] = postData
 
-    db.ref().update(updates);
+    db.ref().update(updates).catch((e)=>{
+      setAlertMessage(e.toString())
+      HandleAlert()
+    })
 
 
     let index = bins.findIndex((item)=>{return item.key == key;})
@@ -159,7 +204,10 @@ export default function App() {
   const signIn = (email, password)=>{
 
     console.log(email, password)
-    firebase.auth().signInWithEmailAndPassword(email, password)
+    firebase.auth().signInWithEmailAndPassword(email, password).catch((e)=>{
+      setAlertMessage(e.toString())
+      HandleAlert()
+    })
     firebase.auth().onAuthStateChanged((user)=>{
       if(user){
         console.log(user.uid)
@@ -170,7 +218,10 @@ export default function App() {
   }
 
   const signUp = (userName, email, password) => {
-    firebase.auth().createUserWithEmailAndPassword(email, password)
+    firebase.auth().createUserWithEmailAndPassword(email, password).catch((e)=>{
+      setAlertMessage(e.toString())
+      HandleAlert()
+    })
     firebase.auth().onAuthStateChanged((user)=>{
       if(user){
         console.log(user.uiid)
@@ -223,7 +274,12 @@ export default function App() {
       }
     }else{
       //Login UI
-        return <AuthPage signInHandler={signIn} signUpHandler={signUp} escapeHandler = {HandleLAuthUI}/>
+        return (
+          <View>
+            
+            <AuthPage signInHandler={signIn} signUpHandler={signUp} escapeHandler = {HandleLAuthUI}/>
+          </View>
+        );
       
     }
     
@@ -333,6 +389,22 @@ const styles = StyleSheet.create({
       marginTop: 22,
       marginLeft: 5
 
+    },
+
+
+    AlertWrapper:{
+      backgroundColor: "#FFF",
+      height: 200,
+
+    },
+
+
+    AlertText:{
+      color: "#c30101"
+    },
+
+    AlertOK:{
+      backgroundColor: "#FFAAA7"
     }
 
 });

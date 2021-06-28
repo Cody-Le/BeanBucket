@@ -12,6 +12,7 @@ export default function AuthPage(props){
     let [password, setPassword] = useState("")
     let [reConfirmPassWord, setConfirmPassword] = useState("")
     let [errorAlert, setErrorAlert] = useState(false)
+    
 
 
     const HandleSignUp = () =>{
@@ -67,9 +68,11 @@ export default function AuthPage(props){
       }else{
         return(
           <View style={[styles.container, {justifyContent: 'center', alignItems: 'center'}]}>
-              <Modal isVisible={errorAlert} style={styles.alertWrapper}>
-                <Text>Something is wrong, check the format of email or reconfirm password</Text>
-                <TouchableOpacity style={[styles.alertButton]} onPress={HandeCloseAlert}><View><Text>Ok</Text></View></TouchableOpacity>
+              <Modal isVisible={errorAlert}>
+                <View style={styles.alertWrapper}>
+                  <Text>Something is wrong, check the format of email or reconfirm password</Text>
+                  <TouchableOpacity style={[styles.alertButton]} onPress={HandeCloseAlert}><View><Text>Ok</Text></View></TouchableOpacity>
+                </View>
 
             </Modal>
             <Text style={{fontSize:20, fontWeight:"bold"}}>Sign Up</Text>
@@ -119,10 +122,12 @@ const styles = StyleSheet.create({
     },
     alertWrapper:{
         backgroundColor: "#FFF",
-        height: 30,
+        height: 100,
         padding: 20, 
         borderRadius:10
     }
+
+
 
 });
 
