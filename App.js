@@ -6,6 +6,7 @@ import AppLoading from "expo-app-loading";
 import Bean from "./components/Beans.js"
 import firebase from "firebase/app"
 import AuthPage from './components/AuthPage.js'
+import 'firebase/auth'
 
 export default function App() {
   let[isFontLoaded] = useFonts({
@@ -13,7 +14,7 @@ export default function App() {
   })
 
 
-  let config = {
+  const config = {
     apiKey: "AIzaSyDwkpXpQgNmuV15udAS1jvfbZvNDLsRv7g",
     authDomain: "beanbucket-d31ca.firebaseapp.com",
     projectId: "beanbucket-d31ca",
@@ -26,7 +27,7 @@ export default function App() {
 
 
   if (!firebase.apps.length) {
-    firebase.initializeApp({});
+    firebase.initializeApp(config);
  }else {
     firebase.app(); // if already initialized, use that one
  }
@@ -85,56 +86,93 @@ export default function App() {
 
 
   const signIn = (email, password)=>{
-    firebase.auth().createUserWithEmailAndPassword(email, password)
-    firebase.auth().onAuthStateChanged((user)=>{
-      if(user){
-        setCurrentUser(user)
-      }
-    })
-  }
 
-  const signUp = (email, password) => {
+    console.log(email, password)
     firebase.auth().signInWithEmailAndPassword(email, password)
     firebase.auth().onAuthStateChanged((user)=>{
       if(user){
+        console.log(user.uid)
         setCurrentUser(user)
       }
     })
   }
 
+  const signUp = (userName, email, password) => {
+    console.log(email.length, email, password)
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+    firebase.auth().onAuthStateChanged((user)=>{
+      if(user){
+        console.log(user.uiid)
+        
+        user.updateProfile({displayName: userName}).then(()=>{
+          setCurrentUser(user)
+        })
+      }
+    })
+  }
+
+  const signOut = () => {
+    firebase.auth().signOut()
+    setCurrentUser(null)
+  }
 
 
   if (!isFontLoaded){
     return <AppLoading/>
   }else{
-
     //Main UI
     if (!isAuthUi){
-      return (
-        <View style={styles.container}>  
-         {isBurgered?<View style={styles.menu}>
-          <View style={styles.profileCircle}/>
-          <Text style={styles.profileName}>User: Guest</Text>
-          <Text style={styles.menuText} onPress={HandleLAuthUI}>Login</Text>
-          </View>:
-          <View></View>}
-          <View style={{flexDirection: "row",justifyContent:"space-between"}}>
-            <View style={styles.head}><TouchableOpacity onPress={addBean}><View style={styles.circle}></View></TouchableOpacity>
-              <Text style={styles.headText}>Add a bean</Text>
+      if(currentUser != null){
+        //Logged in UI
+        return(
+          <View style={styles.container}>  
+           {isBurgered?<View style={styles.menu}>
+            <View style={[styles.profileCircle,{backgroundColor: "#D5ECC2"}]}/>
+            <Text style={styles.profileName}>User: {currentUser.displayName}</Text>
+            <Text style={styles.menuText} onPress={signOut}>Logout</Text>
+            </View>:
+            <View></View>}
+            <View style={{flexDirection: "row",justifyContent:"space-between"}}>
+              <View style={styles.head}><TouchableOpacity onPress={addBean}><View style={styles.circle}></View></TouchableOpacity>
+                <Text style={styles.headText}>Add a bean</Text>
+              </View>
+              <TouchableOpacity onPress={HandleBurgerPressed}style={styles.burger}><View></View></TouchableOpacity> 
             </View>
-            <TouchableOpacity onPress={HandleBurgerPressed}style={styles.burger}><View></View></TouchableOpacity> 
+            <FlatList contentContainerStyle={styles.beansContainer}
+            data = {bins}
+            renderItem = {({item})=><Bean title = {item.title} id = {item.key} description = {item.description} updateHandler={UpdateBean} deleteHandler = {DeleteBean} key = {item.key}/>}
+            extraData = {needRefresh}
+            
+            />
           </View>
-          <FlatList contentContainerStyle={styles.beansContainer}
-          data = {bins}
-          renderItem = {({item})=><Bean title = {item.title} id = {item.key} description = {item.description} updateHandler={UpdateBean} deleteHandler = {DeleteBean} key = {item.key}/>}
-          extraData = {needRefresh}
-          
-          />
-        </View>
-      );
+        );
+      }else{
+        return (
+          <View style={styles.container}>  
+           {isBurgered?<View style={styles.menu}>
+            <View style={styles.profileCircle}/>
+            <Text style={styles.profileName}>User: Guest</Text>
+            <Text style={styles.menuText} onPress={HandleLAuthUI}>Login</Text>
+            </View>:
+            <View></View>}
+            <View style={{flexDirection: "row",justifyContent:"space-between"}}>
+              <View style={styles.head}><TouchableOpacity onPress={addBean}><View style={styles.circle}></View></TouchableOpacity>
+                <Text style={styles.headText}>Add a bean</Text>
+              </View>
+              <TouchableOpacity onPress={HandleBurgerPressed}style={styles.burger}><View></View></TouchableOpacity> 
+            </View>
+            <FlatList contentContainerStyle={styles.beansContainer}
+            data = {bins}
+            renderItem = {({item})=><Bean title = {item.title} id = {item.key} description = {item.description} updateHandler={UpdateBean} deleteHandler = {DeleteBean} key = {item.key}/>}
+            extraData = {needRefresh}
+            
+            />
+          </View>
+        );
+      }
     }else{
       //Login UI
-        return <AuthPage signInHandler={signIn} signUpHandler={signUp}/>
+        return <AuthPage signInHandler={signIn} signUpHandler={signUp} escapeHandler = {HandleLAuthUI}/>
       
     }
     
