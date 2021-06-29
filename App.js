@@ -206,7 +206,10 @@ export default function App() {
     console.log(email, password)
     firebase.auth().signInWithEmailAndPassword(email, password).catch((e)=>{
       setAlertMessage(e.toString())
-      HandleAlert()
+      HandleAlert().catch((e)=>{
+        setAlertMessage(e.toString())
+        HandleAlert()
+      })
     })
     firebase.auth().onAuthStateChanged((user)=>{
       if(user){
