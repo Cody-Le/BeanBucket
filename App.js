@@ -119,7 +119,7 @@ export default function App() {
 
     //Communication with backend,
     //Append a new key
-    let newKey = db.ref().child(currentUser.uid).push().key
+    let newKey = db.ref().child('public/').push().key
 
     //Add a new bean with the same template
     //Tag: true means public and false means private
@@ -130,16 +130,12 @@ export default function App() {
     }
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + newKey] = postData
+    updates["public/" + newKey]  = "A new Bean"
 
     db.ref().update(updates).catch((e)=>{
       setAlertMessage(e.toString())
       HandleAlert()
     })
-
-
-
-
-
     //Handle UI part
   
     let bin2 = bins
@@ -155,11 +151,16 @@ export default function App() {
     let db = firebase.database()
     db.ref().child("users/bucket/").child(currentUser.uid).child(key).remove()
 
+    db.ref().child("public/").child(key).remove()
+
     let index = bins.findIndex((item) => {return item.key == key})
     let bin2 = bins
     bin2.splice(index, 1)
     editBin(bin2)
     setRefreshNeed(!needRefresh)
+
+
+
   }
 
 
@@ -175,11 +176,20 @@ export default function App() {
     }
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + key] = postData
+    if (tag[0]['value']){
+      updates["public/" + key]  = title
+    }
 
     db.ref().update(updates).catch((e)=>{
       setAlertMessage(e.toString())
       HandleAlert()
     })
+
+    //Add the value to the global share of beans or to remove item from it
+    updates = {}
+    if(!tag[0]['value']){
+      db.ref().child("public/").child(key).remove()
+    }
 
 
     let index = bins.findIndex((item)=>{return item.key == key;})
@@ -187,7 +197,6 @@ export default function App() {
     bin2[index] = {key:key, title: title, description: description, tag: tag}
     console.log(index,key, title, description)
     editBin(bin2)
-    console.log(bins)
     setRefreshNeed(!needRefresh)
   }
 

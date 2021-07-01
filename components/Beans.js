@@ -30,12 +30,7 @@ function Tag(props){
                 console.log("Banaanaananananananaanananananna")
         }else if(props.data["type"] == 1){
             //private public processing
-            if (!props.data['value']){
-                changeColor()
-                
-            }else{
-                changeColor()
-            }
+            changeColor()
                     
         }else{
                 //General functionless tag
@@ -64,6 +59,7 @@ export default function Bean(props){
     let [fontLoaded] = useFonts({
         Roboto_400Regular
     })
+    let tag =  props.tags
 
 
     const [isEditTitle, setTitleState] = useState(false)
@@ -72,9 +68,9 @@ export default function Bean(props){
     const [description, setDescription] = useState(props.description)
     const [isOpenDetail, setOpenDetail] = useState (false)
     const [deletePopUp, setPopUp] = useState(false)
-    const [value, setValue] = useState(true)
+    const [value, setValue] = useState(tag[0]['value'])
 
-    let tag =  props.tags
+    
 
     const handleTagStateChange = ()  =>{
         setValue(!value)
