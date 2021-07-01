@@ -5,10 +5,61 @@ import AppLoading from "expo-app-loading";
 
 import Modal from 'react-native-modal'
 
+
+
+function Tag(props){
+
+    let color = ""
+    let text = ""
+
+    if (props.data['type'] == 1){
+        text = props.data['value']?"public":"private"
+        color = props.data['value']?"#98DDCA":"#FFAAA7"
+    }
+    else{
+        text = "analyze"
+        color = "#C7DDFF"
+    }
+    
+    const changeColor = () =>{
+        props.handleStateChange()
+    }
+    
+    const tap = () =>{
+        if (props.data["type"] == 0){
+                console.log("Banaanaananananananaanananananna")
+        }else if(props.data["type"] == 1){
+            //private public processing
+            changeColor()
+                    
+        }else{
+                //General functionless tag
+        }
+    }
+
+    if(props.expand == true){
+        return(
+            <TouchableOpacity onPress = {tap}>
+                <View style={[style.tag, {width: 54, height: 22, alignItems: 'center', justifyContent: 'center', backgroundColor:color}]}>
+                    <Text style={{fontSize:10, color: "#888"}}>{text}</Text>
+                </View>
+            </TouchableOpacity>
+        );
+    }else{
+        return(
+            <View style={[style.tag, {backgroundColor:color}]}></View>
+        );
+    }
+
+}
+
+
+
 export default function Bean(props){
     let [fontLoaded] = useFonts({
         Roboto_400Regular
     })
+    let tag =  props.tags
 
 
     const [isEditTitle, setTitleState] = useState(false)
@@ -17,13 +68,23 @@ export default function Bean(props){
     const [description, setDescription] = useState(props.description)
     const [isOpenDetail, setOpenDetail] = useState (false)
     const [deletePopUp, setPopUp] = useState(false)
+    const [value, setValue] = useState(tag[0]['value'])
 
+    
+
+    const handleTagStateChange = ()  =>{
+        setValue(!value)
+        props.updateHandler(props.id,title,description,  [{value: value, type : 1},{type: 0}])
+        console.log(value)
+        
+
+    }
 
 
     const HandleCloseInput = () =>{
         console.log(isEditTitle)
         if (isEditTitle){
-            props.updateHandler(props.id,title,description)
+            props.updateHandler(props.id,title,description,  [{value: value, type : 1},{type: 0}])
         }
         setTitleState(!isEditTitle)
     
@@ -59,7 +120,11 @@ export default function Bean(props){
         props.deleteHandler(props.id)
     }
 
+   
+    
+    
 
+  
 
     if (!fontLoaded){
         return <View style={style.beanWrapper}></View>
@@ -86,6 +151,10 @@ export default function Bean(props){
                         :<Text style={style.title} onPress={HandleCloseInput}>{title} </Text>}
                         <TouchableOpacity onPress = {HandleOpenDetail}><View style={style.circle} ></View></TouchableOpacity>  
                     </View>
+                    <View style={style.tagWrapper}>
+                        <Tag data = {tag[0]} expand = {true} handleStateChange = {handleTagStateChange}/>
+                        <Tag data = {tag[1]} expand = {true} handleStateChange = {handleTagStateChange}/>
+                    </View>
                     <View style={style.descriptionWrapper}>
                         {isEditDescription?<TextInput style={style.description} 
                         autoFocus
@@ -98,6 +167,7 @@ export default function Bean(props){
                         :<Text style={style.description} onPress={HandleCloseDescription} numberOFLines={10}>{description} </Text>}
                         <TouchableOpacity onPress = {HandleCancel}><View style={style.deleteWrapper}><View style={ style.circle3}/></View></TouchableOpacity>   
                     </View>
+                    
                 </View>
                 
             );
@@ -113,6 +183,10 @@ export default function Bean(props){
                         />
                         :<Text style={style.title} onPress={HandleCloseInput}>{title} </Text>}
                         <TouchableOpacity onPress = {HandleOpenDetail}><View style={[style.circle, style.circle2]} ></View></TouchableOpacity>  
+                    </View>
+                    <View style={style.tagWrapper}>
+                        <Tag data = {tag[0]} expand = {false} handleStateChange = {handleTagStateChange}/>
+                        <Tag data = {tag[1]} expand = {false} handleStateChange = {handleTagStateChange}/>
                     </View>
                 </View>
             );
@@ -176,6 +250,7 @@ const style = StyleSheet.create({
         height: "80%",
         borderRadius: 22,
         padding: 20,
+        maxWidth: "90%",
         justifyContent: "space-between"
     },
     description:{
@@ -188,6 +263,20 @@ const style = StyleSheet.create({
         width: "100%",
         height: "10%",
         alignItems: "flex-end"
+    },
+
+    tagWrapper:{
+        margin: 5,
+        paddingLeft: 10,
+        flexDirection: "row"
+    },
+
+    tag: {
+        backgroundColor: "#EEE",
+        height: 8,
+        width: 30,
+        borderRadius:6,
+        marginRight: 5
     }
 
 

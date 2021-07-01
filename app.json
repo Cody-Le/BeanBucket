@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "BeanBucket",
+    "name": "beanbucket",
     "slug": "BeanBucket",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,10 +23,15 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+        
+      },
+      "package": "com.codyle.beanbucket",
+      "versionCode": 1,
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/favicon.png"
     }
+  
   }
 }

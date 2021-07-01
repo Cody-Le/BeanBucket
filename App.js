@@ -37,7 +37,7 @@ export default function App() {
 
 
   
-
+//tag system: public, scientific, video and  non-evaluated
 
 
 
@@ -69,11 +69,6 @@ export default function App() {
     setAlertState(!showAlert)
   }
 
-
-
-
-
-
   const getBeans = (uid) =>{
 
     let db = firebase.database()
@@ -81,7 +76,7 @@ export default function App() {
       if(snap.exists()){
         var updateBin = []
         for (var bean in snap.val()){
-          updateBin.push({key:bean, title: snap.val()[bean]['title'], description: snap.val()[bean]['description']})
+          updateBin.push({key:bean, title: snap.val()[bean]['title'], description: snap.val()[bean]['description'], tag: snap.val()[bean]['tag']})
         }
         editBin(updateBin)
       }
@@ -89,6 +84,11 @@ export default function App() {
       setAlertMessage(e.toString())
       HandleAlert()
     })
+
+  
+
+
+    
   }
 
 
@@ -119,30 +119,28 @@ export default function App() {
 
     //Communication with backend,
     //Append a new key
-    let newKey = db.ref().child(currentUser.uid).push().key
+    let newKey = db.ref().child('public/').push().key
 
     //Add a new bean with the same template
+    //Tag: true means public and false means private
     const postData = {
       title: "A new Bean",
-      description: "Add a new description"
+      description: "Add a new description",
+      tag: [{value: true, type : 1},{type: 0}]
     }
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + newKey] = postData
+    updates["public/" + newKey]  = "A new Bean"
 
     db.ref().update(updates).catch((e)=>{
       setAlertMessage(e.toString())
       HandleAlert()
     })
-
-
-
-
-
     //Handle UI part
   
     let bin2 = bins
     
-    bin2.push({key: newKey, title: "bean", description: "Add a description"})
+    bin2.push({key: newKey, title: "bean", description: "Add a description",tag: [{value: true, type : 1},{type: 0}]})
     editBin(bin2)
     setRefreshNeed(!needRefresh)
   
@@ -153,38 +151,52 @@ export default function App() {
     let db = firebase.database()
     db.ref().child("users/bucket/").child(currentUser.uid).child(key).remove()
 
+    db.ref().child("public/").child(key).remove()
+
     let index = bins.findIndex((item) => {return item.key == key})
     let bin2 = bins
     bin2.splice(index, 1)
     editBin(bin2)
     setRefreshNeed(!needRefresh)
+
+
+
   }
 
 
 
   
 
-  const UpdateBean = (key, title, description) =>{
+  const UpdateBean = (key, title, description, tag) =>{
     let db = firebase.database()
     const postData = {
       title: title,
-      description: description
+      description: description,
+      tag: tag
     }
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + key] = postData
+    if (tag[0]['value']){
+      updates["public/" + key]  = title
+    }
 
     db.ref().update(updates).catch((e)=>{
       setAlertMessage(e.toString())
       HandleAlert()
     })
 
+    //Add the value to the global share of beans or to remove item from it
+    updates = {}
+    if(!tag[0]['value']){
+      db.ref().child("public/").child(key).remove()
+    }
+
 
     let index = bins.findIndex((item)=>{return item.key == key;})
     let bin2 = bins
-    bin2[index] = {key:key, title: title, description: description}
+    bin2[index] = {key:key, title: title, description: description, tag: tag}
     console.log(index,key, title, description)
     editBin(bin2)
-    console.log(bins)
     setRefreshNeed(!needRefresh)
   }
 
@@ -237,6 +249,7 @@ export default function App() {
   }
 
   const signOut = () => {
+
     editBin([])
     firebase.auth().signOut()
     setCurrentUser(null)
@@ -266,7 +279,13 @@ export default function App() {
             </View>
             <FlatList contentContainerStyle={styles.beansContainer}
             data = {bins}
-            renderItem = {({item})=><Bean title = {item.title} id = {item.key} description = {item.description} updateHandler={UpdateBean} deleteHandler = {DeleteBean} key = {item.key}/>}
+            renderItem = {({item})=><Bean title = {item.title} 
+            id = {item.key} 
+            description = {item.description} 
+            updateHandler={UpdateBean} 
+            deleteHandler = {DeleteBean} key = {item.key}
+            tags = {item['tag']}
+            />}
             extraData = {needRefresh}
             
             />
