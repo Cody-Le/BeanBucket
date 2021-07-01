@@ -86,6 +86,11 @@ export default function Bean(props){
                         :<Text style={style.title} onPress={HandleCloseInput}>{title} </Text>}
                         <TouchableOpacity onPress = {HandleOpenDetail}><View style={style.circle} ></View></TouchableOpacity>  
                     </View>
+                    <View style={style.tagWrapper}>
+                        <View style={style.tag}>
+
+                        </View>
+                    </View>
                     <View style={style.descriptionWrapper}>
                         {isEditDescription?<TextInput style={style.description} 
                         autoFocus
@@ -98,6 +103,7 @@ export default function Bean(props){
                         :<Text style={style.description} onPress={HandleCloseDescription} numberOFLines={10}>{description} </Text>}
                         <TouchableOpacity onPress = {HandleCancel}><View style={style.deleteWrapper}><View style={ style.circle3}/></View></TouchableOpacity>   
                     </View>
+                    
                 </View>
                 
             );
@@ -113,6 +119,11 @@ export default function Bean(props){
                         />
                         :<Text style={style.title} onPress={HandleCloseInput}>{title} </Text>}
                         <TouchableOpacity onPress = {HandleOpenDetail}><View style={[style.circle, style.circle2]} ></View></TouchableOpacity>  
+                    </View>
+                    <View style={style.tagWrapper}>
+                        <View style={style.tag}>
+
+                        </View>
                     </View>
                 </View>
             );
@@ -176,6 +187,7 @@ const style = StyleSheet.create({
         height: "80%",
         borderRadius: 22,
         padding: 20,
+        maxWidth: "90%",
         justifyContent: "space-between"
     },
     description:{
@@ -188,6 +200,18 @@ const style = StyleSheet.create({
         width: "100%",
         height: "10%",
         alignItems: "flex-end"
+    },
+
+    tagWrapper:{
+        margin: 5,
+        paddingLeft: 10
+    },
+
+    tag: {
+        backgroundColor: "#EEE",
+        height: 8,
+        width: 30,
+        borderRadius:10,
     }
 
 

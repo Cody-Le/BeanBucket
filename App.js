@@ -37,7 +37,7 @@ export default function App() {
 
 
   
-
+//tag system: public, scientific, video and  non-evaluated
 
 
 
@@ -124,7 +124,8 @@ export default function App() {
     //Add a new bean with the same template
     const postData = {
       title: "A new Bean",
-      description: "Add a new description"
+      description: "Add a new description",
+      tag: "general"
     }
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + newKey] = postData
@@ -266,7 +267,13 @@ export default function App() {
             </View>
             <FlatList contentContainerStyle={styles.beansContainer}
             data = {bins}
-            renderItem = {({item})=><Bean title = {item.title} id = {item.key} description = {item.description} updateHandler={UpdateBean} deleteHandler = {DeleteBean} key = {item.key}/>}
+            renderItem = {({item})=><Bean title = {item.title} 
+            id = {item.key} 
+            description = {item.description} 
+            updateHandler={UpdateBean} 
+            deleteHandler = {DeleteBean} key = {item.key}
+
+            />}
             extraData = {needRefresh}
             
             />
