@@ -69,11 +69,6 @@ export default function App() {
     setAlertState(!showAlert)
   }
 
-
-
-
-
-
   const getBeans = (uid) =>{
 
     let db = firebase.database()
@@ -81,7 +76,7 @@ export default function App() {
       if(snap.exists()){
         var updateBin = []
         for (var bean in snap.val()){
-          updateBin.push({key:bean, title: snap.val()[bean]['title'], description: snap.val()[bean]['description']})
+          updateBin.push({key:bean, title: snap.val()[bean]['title'], description: snap.val()[bean]['description'], tag: snap.val()[bean]['tag']})
         }
         editBin(updateBin)
       }
@@ -89,6 +84,11 @@ export default function App() {
       setAlertMessage(e.toString())
       HandleAlert()
     })
+
+  
+
+
+    
   }
 
 
@@ -122,10 +122,11 @@ export default function App() {
     let newKey = db.ref().child(currentUser.uid).push().key
 
     //Add a new bean with the same template
+    //Tag: true means public and false means private
     const postData = {
       title: "A new Bean",
       description: "Add a new description",
-      tag: "general"
+      tag: [{value: true, type : 1},{type: 0}]
     }
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + newKey] = postData
@@ -143,7 +144,7 @@ export default function App() {
   
     let bin2 = bins
     
-    bin2.push({key: newKey, title: "bean", description: "Add a description"})
+    bin2.push({key: newKey, title: "bean", description: "Add a description",tag: [{value: true, type : 1},{type: 0}]})
     editBin(bin2)
     setRefreshNeed(!needRefresh)
   
@@ -165,11 +166,12 @@ export default function App() {
 
   
 
-  const UpdateBean = (key, title, description) =>{
+  const UpdateBean = (key, title, description, tag) =>{
     let db = firebase.database()
     const postData = {
       title: title,
-      description: description
+      description: description,
+      tag: tag
     }
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + key] = postData
@@ -182,7 +184,7 @@ export default function App() {
 
     let index = bins.findIndex((item)=>{return item.key == key;})
     let bin2 = bins
-    bin2[index] = {key:key, title: title, description: description}
+    bin2[index] = {key:key, title: title, description: description, tag: tag}
     console.log(index,key, title, description)
     editBin(bin2)
     console.log(bins)
@@ -238,6 +240,7 @@ export default function App() {
   }
 
   const signOut = () => {
+
     editBin([])
     firebase.auth().signOut()
     setCurrentUser(null)
@@ -272,7 +275,7 @@ export default function App() {
             description = {item.description} 
             updateHandler={UpdateBean} 
             deleteHandler = {DeleteBean} key = {item.key}
-
+            tags = {item['tag']}
             />}
             extraData = {needRefresh}
             
