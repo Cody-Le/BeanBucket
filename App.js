@@ -167,16 +167,19 @@ export default function App() {
 
   
 
-  const UpdateBean = (key, title, description, tag) =>{
+  const UpdateBean = (key, title, description, value) =>{
     let db = firebase.database()
     const postData = {
       title: title,
       description: description,
-      tag: tag
+      tag:  [{value:!value, type:1},{type:0}]
     }
+
+
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + key] = postData
-    if (tag[0]['value']){
+
+    if (value){
       updates["public/" + key]  = title
     }
 
@@ -187,14 +190,14 @@ export default function App() {
 
     //Add the value to the global share of beans or to remove item from it
     updates = {}
-    if(!tag[0]['value']){
+    if(!value){
       db.ref().child("public/").child(key).remove()
     }
 
 
     let index = bins.findIndex((item)=>{return item.key == key;})
     let bin2 = bins
-    bin2[index] = {key:key, title: title, description: description, tag: tag}
+    bin2[index] = {key:key, title: title, description: description, tag: [{value:!value, type:1},{type:0}]}
     console.log(index,key, title, description)
     editBin(bin2)
     setRefreshNeed(!needRefresh)

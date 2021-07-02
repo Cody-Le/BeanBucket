@@ -69,22 +69,22 @@ export default function Bean(props){
     const [isOpenDetail, setOpenDetail] = useState (false)
     const [deletePopUp, setPopUp] = useState(false)
     const [value, setValue] = useState(tag[0]['value'])
-
+    const [tags, setTags] = useState(props.tags)
     
-
-    const handleTagStateChange = ()  =>{
+    
+    const handleTagStateChange = () =>{
         setValue(!value)
-        props.updateHandler(props.id,title,description,  [{value: value, type : 1},{type: 0}])
-        console.log(value)
+        props.updateHandler(props.id,title,description, value)
+
         
 
     }
 
 
     const HandleCloseInput = () =>{
-        console.log(isEditTitle)
+
         if (isEditTitle){
-            props.updateHandler(props.id,title,description,  [{value: value, type : 1},{type: 0}])
+            props.updateHandler(props.id,title,description,  !value)
         }
         setTitleState(!isEditTitle)
     
