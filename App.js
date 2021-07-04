@@ -77,6 +77,7 @@ export default function App() {
         var updateBin = []
         for (var bean in snap.val()){
           updateBin.push({key:bean, title: snap.val()[bean]['title'], description: snap.val()[bean]['description'], tag: snap.val()[bean]['tag']})
+          console.log(updateBin)
         }
         editBin(updateBin)
       }
@@ -263,7 +264,7 @@ export default function App() {
   if (!isFontLoaded){
     return <AppLoading/>
   }else{
-    let bucket = bins.reverse()
+    
     //Main UI
     if (!isAuthUi){
       if(currentUser != null){
@@ -283,7 +284,7 @@ export default function App() {
               <TouchableOpacity onPress={HandleBurgerPressed}style={styles.burger}><View></View></TouchableOpacity> 
             </View>
             <FlatList contentContainerStyle={styles.beansContainer}
-            data = {bucket}
+            data = {bins}
             renderItem = {({item})=><Bean title = {item.title} 
             id = {item.key} 
             inverted = {true}

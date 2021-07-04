@@ -22,13 +22,14 @@ function AnalyzeWindow(props){
     const [loaded, setLoaded] = useState(false)
     const [data, setData] = useState({})
     const [sortedData, setList] = useState([])
+    const [error, setError] = useState(false)
 
 
     const statStyle = StyleSheet.create({
         wrapper:{
             backgroundColor: "#fff",
             width:"90%",
-            height: "80%",
+            height: "95%",
             shadowColor: "#eeeeee",
             shadowOffset: {width: 0, height: 0},
             shadowRadius: 1000,
@@ -46,7 +47,8 @@ function AnalyzeWindow(props){
         xhttp.onload = () => {
             
             
-            setData(JSON.parse(xhttp.responseText))
+            try{
+                setData(JSON.parse(xhttp.responseText))
             let res = JSON.parse(xhttp.responseText)
             let matchList = res['Match']
             
@@ -79,6 +81,20 @@ function AnalyzeWindow(props){
             
          
             setLoaded(true)
+            }catch(e){
+                console.log(e, xhttp.responseText)
+                setError(true)
+                props.offVisible()
+                return(
+                    <Modal visible={props.visible}>
+                        <View style={statStyle.wrapper}>
+                            <Text>xhttp.responseText</Text>
+                            <TouchableOpacity onPress={props.offVisible} style={[style.circle3,{position:"absolute", right:0, margin: 10}]}><View></View></TouchableOpacity>
+        
+                        </View>
+                    </Modal>
+                )
+            }
             
         }
 
@@ -97,17 +113,22 @@ function AnalyzeWindow(props){
             <Modal visible={props.visible}>
                 <View style={{justifyContent:"center", alignItems:"center", width:"100%", height:"100%", flex:1}}>
                     <View style={statStyle.wrapper}>
-                        <View style={{alignItems:"center",height: "50%"}} >
-                            <Text style={{fontWeight:"bold", fontSize:28, paddingTop: 50, paddingBottom:20}}>{(Math.floor(data['logRM'] * 100))/100}</Text>
-                            <View style={{width: "100%", flexDirection:"row", alignItems:"center", justifyContent: "space-between"}}>
-                                <Text>0.0</Text>
-                                <Slider value={data['logRM']} maximumValue={5} disabled={true} style={{width: "73%"}}/>
-                                <Text>5.0</Text>
+                        <View style={{alignItems:"center",height: "42%",justifyContent: "space-between"}} >
+                            <Text style={{fontSize: 19, width: "90%", fontWeight: "700", textAlign: "center", paddingTop: 50}}>{props.query}</Text>
+                            <View style={{alignItems:"center", paddingBottom: 20}}>
+                            <Text style={{fontWeight:"bold", fontSize:25, paddingTop: 20, paddingBottom:20}}>{((Math.floor((5-data['logRM']) * 100))/100)}</Text>
+                                <View style={{width: "100%", flexDirection:"row", alignItems:"center", justifyContent: "space-between"}}>
+                                    <Text>0.0</Text>
+                                    <Slider value={5 - data['logRM']} maximumValue={5} disabled={true} style={{width: "73%"}}/>
+                                    <Text>5.0</Text>
+                                </View>
+                               
                             </View>
-                            <Text style={{fontWeight: "bold"}}>Uniqueness</Text>
+                            
                             
                         </View>
                         <View>
+                            <Text style={{padding: 20, fontWeight: "bold", textAlign: "center", fontSize: 16}}>Similar Beans</Text>
                             <FlatList
                             data = {sortedData}
                             renderItem={({item}) => <InnerBean data = {item}/>}
@@ -115,6 +136,7 @@ function AnalyzeWindow(props){
                             />
                         </View>
                         <TouchableOpacity onPress={props.offVisible} style={[style.circle3,{position:"absolute", right:0, margin: 10}]}><View></View></TouchableOpacity>
+                        <Text style={{padding:10, textAlign: "center", width: "100%",color: "#aaa", fontWeight: "bold"}}>The higher the more unique</Text>
                     </View>
                 </View>
             </Modal>
@@ -128,7 +150,7 @@ function AnalyzeWindow(props){
                             
                             <View>
                                 <Text>Loading</Text>
-                                <TouchableOpacity onPress={props.offVisible}><View><Text>OFFF</Text></View></TouchableOpacity>
+                                <TouchableOpacity onPress={props.offVisible} style={[style.circle3,{position:"absolute", right:0, margin: 10}]}><View></View></TouchableOpacity>
                             </View>
                             <View>
             
@@ -148,7 +170,7 @@ function AnalyzeWindow(props){
 
 function Tag(props){
 
-
+   
 
 
     let [analyzing, setAnalyzeState] = useState(false)
@@ -176,11 +198,13 @@ function Tag(props){
 
     const tap = () =>{
         if (props.data["type"] == 0){
-            
+                
                 setAnalyze()
         }else if(props.data["type"] == 1){
             //private public processing
+            
             changeColor()
+           
                     
         }else{
                 //General functionless tag
@@ -213,6 +237,7 @@ export default function Bean(props){
         Roboto_400Regular
     })
     let tag =  props.tags
+    let value = tag[0]['value']
 
 
     const [isEditTitle, setTitleState] = useState(false)
@@ -221,17 +246,14 @@ export default function Bean(props){
     const [description, setDescription] = useState(props.description)
     const [isOpenDetail, setOpenDetail] = useState (false)
     const [deletePopUp, setPopUp] = useState(false)
-    const [value, setValue] = useState(tag[0]['value'])
-    const [tags, setTags] = useState(props.tags)
+    
     
     
     const handleTagStateChange = () =>{
-        let val = value
-       
-        setValue(!(val))
+        
       
-        props.updateHandler(props.id,title,description, !value)
-
+        props.updateHandler(props.id,title,description, value)
+        
         
 
     }
@@ -247,8 +269,13 @@ export default function Bean(props){
 
 
     const HandleCloseDescription = () =>{
-        setEditDescription(!isEditDescription)
-        props.updateHandler(props.id,title,description, value)
+        
+        if (isEditDescription){
+            props.updateHandler(props.id,title,description,  value)
+            setEditDescription(false)
+        }else{
+            setEditDescription(true)
+        }
     }
 
     const HandleTitleInput = (text) =>{
