@@ -180,7 +180,7 @@ export default function App() {
     updates["users/bucket/" + currentUser.uid + "/" + key] = postData
 
     if (!value){
-      console.log(!value)
+      
       updates["public/" + key]  = title
     }
 
@@ -199,7 +199,7 @@ export default function App() {
     let index = bins.findIndex((item)=>{return item.key == key;})
     let bin2 = bins
     bin2[index] = {key:key, title: title, description: description, tag: [{value:!value, type:1},{type:0}]}
-    console.log(index,key, title, description)
+    
     editBin(bin2)
     setRefreshNeed(!needRefresh)
   }
@@ -219,7 +219,7 @@ export default function App() {
 
   const signIn = (email, password)=>{
 
-    console.log(email, password)
+
     firebase.auth().signInWithEmailAndPassword(email, password).catch((e)=>{
       setAlertMessage(e.toString())
       HandleAlert().catch((e)=>{
@@ -229,7 +229,7 @@ export default function App() {
     })
     firebase.auth().onAuthStateChanged((user)=>{
       if(user){
-        console.log(user.uid)
+       
         setCurrentUser(user)
         getBeans(user.uid)
       }
@@ -243,7 +243,7 @@ export default function App() {
     })
     firebase.auth().onAuthStateChanged((user)=>{
       if(user){
-        console.log(user.uiid)
+        
         getBeans(user.uid)
         user.updateProfile({displayName: userName}).then(()=>{
           setCurrentUser(user)
@@ -263,6 +263,7 @@ export default function App() {
   if (!isFontLoaded){
     return <AppLoading/>
   }else{
+    let bucket = bins.reverse()
     //Main UI
     if (!isAuthUi){
       if(currentUser != null){
@@ -282,9 +283,10 @@ export default function App() {
               <TouchableOpacity onPress={HandleBurgerPressed}style={styles.burger}><View></View></TouchableOpacity> 
             </View>
             <FlatList contentContainerStyle={styles.beansContainer}
-            data = {bins}
+            data = {bucket}
             renderItem = {({item})=><Bean title = {item.title} 
             id = {item.key} 
+            inverted = {true}
             description = {item.description} 
             updateHandler={UpdateBean} 
             deleteHandler = {DeleteBean} key = {item.key}
