@@ -179,7 +179,8 @@ export default function App() {
     var updates = {}
     updates["users/bucket/" + currentUser.uid + "/" + key] = postData
 
-    if (value){
+    if (!value){
+      console.log(!value)
       updates["public/" + key]  = title
     }
 
@@ -190,7 +191,7 @@ export default function App() {
 
     //Add the value to the global share of beans or to remove item from it
     updates = {}
-    if(!value){
+    if(value){
       db.ref().child("public/").child(key).remove()
     }
 

@@ -11,15 +11,6 @@ from flask_restful import Api, Resource, reqparse
 import math
 
 
-
-
-app = Flask(__name__)
-
-api = Api(app)
-
-
-
-
 from googleapiclient.discovery import build
 
 def search(query, **kwargs):

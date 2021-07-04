@@ -1,14 +1,157 @@
-import React, {useState, Component}from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
+import React, {useState, Component, useEffect}from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList} from 'react-native';
+import Slider from "react-native-sliders"
 import { Roboto_400Regular, useFonts} from '@expo-google-fonts/roboto';
 import AppLoading from "expo-app-loading";
 
 import Modal from 'react-native-modal'
 
 
+function InnerBean(props){
+    console.log()
+    return(
+        <View style={{backgroundColor:"#F2F4F6", width: "100%", padding: 20, marginBottom: 20, borderRadius: 15, justifyContent: "space-between", flexDirection:"row"}}>
+            <Text style={{width: "80%"}}>{props.data[Object.keys(props.data)[0]]}</Text>
+            <Text style={{fontWeight: "bold"}}>{Math.floor(props.data['score'] * 100)/100}</Text>
+        </View>
+    )
+}
+
+
+function AnalyzeWindow(props){
+    const [loaded, setLoaded] = useState(false)
+    const [data, setData] = useState({})
+    const [sortedData, setList] = useState([])
+
+
+    const statStyle = StyleSheet.create({
+        wrapper:{
+            backgroundColor: "#fff",
+            width:"90%",
+            height: "80%",
+            shadowColor: "#eeeeee",
+            shadowOffset: {width: 0, height: 0},
+            shadowRadius: 1000,
+            shadowOpacity: 10,
+            elevation: 4,
+            borderRadius:10,
+            padding: 30
+        }
+    })
+
+    const fetchStatistic = () =>{
+        let query = props.query.replace(" ", "%20")
+        
+        const xhttp = new XMLHttpRequest();
+        xhttp.onload = () => {
+            
+            
+            setData(JSON.parse(xhttp.responseText))
+            let res = JSON.parse(xhttp.responseText)
+            let matchList = res['Match']
+            
+            for(var i = 0; i<matchList.length; i++){
+                if (Object.keys(matchList[i])[0] == props.id){
+                    
+                    matchList.splice(i, 1)
+                    break
+                }
+              
+            }
+
+            matchList.sort((first, second) =>{
+                try{
+                    if (first['score'] >= second['score']){
+                        return 1
+                    }else{
+                        return -1
+                    }
+                }catch{
+                    return 0
+                }
+            })
+
+            if (matchList.length > 3){
+                setList(matchList.splice(0,3))
+            }else{
+                setList(matchList)
+            }
+            
+         
+            setLoaded(true)
+            
+        }
+
+
+        xhttp.open('GET', "https://beanbackend.herokuapp.com/search?query=" + query)
+        xhttp.send()
+    }
+    
+    useEffect(()=>{
+        fetchStatistic()
+
+    },[])
+
+    if(loaded){
+        return(
+            <Modal visible={props.visible}>
+                <View style={{justifyContent:"center", alignItems:"center", width:"100%", height:"100%", flex:1}}>
+                    <View style={statStyle.wrapper}>
+                        <View style={{alignItems:"center",height: "50%"}} >
+                            <Text style={{fontWeight:"bold", fontSize:28, paddingTop: 50, paddingBottom:20}}>{(Math.floor(data['logRM'] * 100))/100}</Text>
+                            <View style={{width: "100%", flexDirection:"row", alignItems:"center", justifyContent: "space-between"}}>
+                                <Text>0.0</Text>
+                                <Slider value={data['logRM']} maximumValue={5} disabled={true} style={{width: "73%"}}/>
+                                <Text>5.0</Text>
+                            </View>
+                            <Text style={{fontWeight: "bold"}}>Uniqueness</Text>
+                            
+                        </View>
+                        <View>
+                            <FlatList
+                            data = {sortedData}
+                            renderItem={({item}) => <InnerBean data = {item}/>}
+                            
+                            />
+                        </View>
+                        <TouchableOpacity onPress={props.offVisible} style={[style.circle3,{position:"absolute", right:0, margin: 10}]}><View></View></TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
+        )
+    }else{
+        return(
+            <Modal visible={props.visible}>
+                <Modal visible={props.visible}>
+                    <View style={{justifyContent:"center", alignItems:"center", width:"100%", height:"100%", flex:1}}>
+                        <View style={statStyle.wrapper}>
+                            
+                            <View>
+                                <Text>Loading</Text>
+                                <TouchableOpacity onPress={props.offVisible}><View><Text>OFFF</Text></View></TouchableOpacity>
+                            </View>
+                            <View>
+            
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            </Modal>
+        )
+    }
+}
+
+
+
+
+
 
 function Tag(props){
 
+
+
+
+    let [analyzing, setAnalyzeState] = useState(false)
     let color = ""
     let text = ""
 
@@ -25,9 +168,16 @@ function Tag(props){
         props.handleStateChange()
     }
     
+    const setAnalyze = () =>{
+        setAnalyzeState(!analyzing)
+    }
+
+
+
     const tap = () =>{
         if (props.data["type"] == 0){
-                console.log("Banaanaananananananaanananananna")
+            
+                setAnalyze()
         }else if(props.data["type"] == 1){
             //private public processing
             changeColor()
@@ -39,11 +189,14 @@ function Tag(props){
 
     if(props.expand == true){
         return(
-            <TouchableOpacity onPress = {tap}>
-                <View style={[style.tag, {width: 54, height: 22, alignItems: 'center', justifyContent: 'center', backgroundColor:color}]}>
-                    <Text style={{fontSize:10, color: "#888"}}>{text}</Text>
-                </View>
-            </TouchableOpacity>
+            <View>
+                <AnalyzeWindow visible={analyzing} offVisible={setAnalyze} query ={props.title} id={props.id}/>
+                <TouchableOpacity onPress = {tap}>
+                    <View style={[style.tag, {width: 54, height: 22, alignItems: 'center', justifyContent: 'center', backgroundColor:color}]}>
+                        <Text style={{fontSize:10, color: "#888"}}>{text}</Text>
+                    </View>
+                </TouchableOpacity>
+            </View>
         );
     }else{
         return(
@@ -73,8 +226,11 @@ export default function Bean(props){
     
     
     const handleTagStateChange = () =>{
-        setValue(!value)
-        props.updateHandler(props.id,title,description, value)
+        let val = value
+       
+        setValue(!(val))
+      
+        props.updateHandler(props.id,title,description, !value)
 
         
 
@@ -82,9 +238,8 @@ export default function Bean(props){
 
 
     const HandleCloseInput = () =>{
-
         if (isEditTitle){
-            props.updateHandler(props.id,title,description,  !value)
+            props.updateHandler(props.id,title,description,  value)
         }
         setTitleState(!isEditTitle)
     
@@ -93,14 +248,11 @@ export default function Bean(props){
 
     const HandleCloseDescription = () =>{
         setEditDescription(!isEditDescription)
-        if (isEditDescription){
-            props.updateHandler(props.id,title,description)
-        }
-        props.updateHandler(props.id,title,description)
+        props.updateHandler(props.id,title,description, value)
     }
 
     const HandleTitleInput = (text) =>{
-        console.log(text)
+        
         setTitle(text)
     }
 
@@ -152,8 +304,8 @@ export default function Bean(props){
                         <TouchableOpacity onPress = {HandleOpenDetail}><View style={style.circle} ></View></TouchableOpacity>  
                     </View>
                     <View style={style.tagWrapper}>
-                        <Tag data = {tag[0]} expand = {true} handleStateChange = {handleTagStateChange}/>
-                        <Tag data = {tag[1]} expand = {true} handleStateChange = {handleTagStateChange}/>
+                        <Tag data = {tag[0]} expand = {true} handleStateChange = {handleTagStateChange} title = {title} id={props.id}/>
+                        <Tag data = {tag[1]} expand = {true} handleStateChange = {handleTagStateChange} title = {title} id={props.id}/>
                     </View>
                     <View style={style.descriptionWrapper}>
                         {isEditDescription?<TextInput style={style.description} 
@@ -185,8 +337,8 @@ export default function Bean(props){
                         <TouchableOpacity onPress = {HandleOpenDetail}><View style={[style.circle, style.circle2]} ></View></TouchableOpacity>  
                     </View>
                     <View style={style.tagWrapper}>
-                        <Tag data = {tag[0]} expand = {false} handleStateChange = {handleTagStateChange}/>
-                        <Tag data = {tag[1]} expand = {false} handleStateChange = {handleTagStateChange}/>
+                        <Tag data = {tag[0]} expand = {false} handleStateChange = {handleTagStateChange} title = {title}/>
+                        <Tag data = {tag[1]} expand = {false} handleStateChange = {handleTagStateChange} title = {title}/>
                     </View>
                 </View>
             );
